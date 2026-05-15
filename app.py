@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import joblib
+import pandas as pd
 
 # =========================
 # 1. PAGE CONFIG
@@ -8,7 +9,6 @@ import joblib
 st.set_page_config(
     page_title="Placement Predictor",
     layout="wide",
-    page_icon="🎓"
 )
 
 # =========================
@@ -19,39 +19,84 @@ model = joblib.load("placement_model.pkl")
 # =========================
 # 3. HEADER
 # =========================
-st.title("🎓 AI Placement Prediction System")
-st.write("Predict whether a student will be placed based on academic & skill profile")
+st.title("Placement Prediction")
+st.write("Predict your placement chances based on your academic and skill profile.")
 
 # =========================
 # SIDEBAR INPUTS
 # =========================
-st.sidebar.header("📌 Student Details Input")
+st.sidebar.header(" Your details Input")
 
 age = st.sidebar.number_input("Age", 18, 35)
 
-gender = st.sidebar.selectbox("Gender", ["Male", "Female"])
+gender = st.sidebar.selectbox(
+    "Gender",
+    ["Male", "Female"]
+)
 
-degree = st.sidebar.selectbox("Degree", ["B.Tech", "BCA", "MCA"])
+degree = st.sidebar.selectbox(
+    "Degree",
+    ["B.Tech", "BCA", "MCA"]
+)
 
-branch = st.sidebar.selectbox("Branch", ["Civil", "ECE", "IT", "ME"])
+branch = st.sidebar.selectbox(
+    "Branch",
+    ["Civil", "ECE", "IT", "ME"]
+)
 
-cgpa = st.sidebar.number_input("CGPA", 0.0, 10.0)
+cgpa = st.sidebar.number_input(
+    "CGPA",
+    0.0,
+    10.0
+)
 
-internships = st.sidebar.number_input("Internships", 0, 10)
+internships = st.sidebar.number_input(
+    "Internships",
+    0,
+    10
+)
 
-projects = st.sidebar.number_input("Projects", 0, 10)
+projects = st.sidebar.number_input(
+    "Projects",
+    0,
+    10
+)
 
-coding = st.sidebar.number_input("Coding Skills", 0, 10)
+coding = st.sidebar.number_input(
+    "Coding Skills",
+    0,
+    10
+)
 
-communication = st.sidebar.number_input("Communication Skills", 0, 10)
+communication = st.sidebar.number_input(
+    "Communication Skills",
+    0,
+    10
+)
 
-aptitude = st.sidebar.number_input("Aptitude Score", 0, 100)
+aptitude = st.sidebar.number_input(
+    "Aptitude Score",
+    0,
+    100
+)
 
-soft_skills = st.sidebar.number_input("Soft Skills", 0, 10)
+soft_skills = st.sidebar.number_input(
+    "Soft Skills",
+    0,
+    10
+)
 
-certifications = st.sidebar.number_input("Certifications", 0, 10)
+certifications = st.sidebar.number_input(
+    "Certifications",
+    0,
+    10
+)
 
-backlogs = st.sidebar.number_input("Backlogs", 0, 10)
+backlogs = st.sidebar.number_input(
+    "Backlogs",
+    0,
+    10
+)
 
 # =========================
 # ENCODING
@@ -70,12 +115,9 @@ branch_me = 1 if branch == "ME" else 0
 # =========================
 # MAIN PAGE BUTTON
 # =========================
-st.subheader("🔍 Prediction Section")
+st.subheader("Prediction Section")
 
-col1, col2 = st.columns([1, 1])
-
-with col1:
-    predict_btn = st.button("🚀 Predict Placement")
+predict_btn = st.button("Predict Placement")
 
 # =========================
 # PREDICTION
@@ -108,15 +150,68 @@ if predict_btn:
 
     st.markdown("---")
 
+    # =========================
+    # RESULT
+    # =========================
     if prediction[0] == 1:
-        st.success("🎉 Student is LIKELY to be PLACED")
-        st.metric("Placement Probability", f"{probability[0][1]*100:.2f}%")
+
+        st.success("You are likely to be PLACED")
+
+        st.metric(
+            "Placement Confidence",
+            f"{probability[0][1]*100:.2f}%"
+        )
+
     else:
-        st.error("⚠ Student is NOT likely to be placed")
-        st.metric("Placement Probability", f"{probability[0][0]*100:.2f}%")
+
+        st.error("You are not likely to be Placed")
+
+        st.metric(
+            "Placement Confidence",
+            f"{probability[0][0]*100:.2f}%"
+        )
+
+        # =========================
+        # IMPROVEMENT SUGGESTIONS
+        # =========================
+        st.subheader("Improvement Suggestions")
+
+        suggestions = []
+
+        if cgpa < 7:
+            suggestions.append("Improve CGPA")
+
+        if coding < 7:
+            suggestions.append("Strengthen coding skills")
+
+        if communication < 7:
+            suggestions.append("Improve communication skills")
+
+        if aptitude < 70:
+            suggestions.append("Practice aptitude regularly")
+
+        if internships < 1:
+            suggestions.append("Complete more internships")
+
+        if projects < 2:
+            suggestions.append("Build more real-world projects")
+
+        if certifications < 2:
+            suggestions.append("Earn more certifications")
+
+        if backlogs > 0:
+            suggestions.append("Clear academic backlogs")
+
+        if len(suggestions) == 0:
+            suggestions.append(
+                "Profile looks strong. Focus on interview preparation."
+            )
+
+        for tip in suggestions:
+            st.write(f"✔ {tip}")
 
     # =========================
-    # VISUALIZATION
+    # PROBABILITY CHART
     # =========================
     st.subheader("📊 Prediction Breakdown")
 
@@ -126,7 +221,44 @@ if predict_btn:
     })
 
 # =========================
-# FOOTER
+# FEATURE IMPORTANCE
 # =========================
-st.markdown("---")
-st.caption("Built with Streamlit • Placement Prediction ML Project")
+st.subheader("Factors Influencing Prediction")
+
+feature_names = [
+    "Age",
+    "CGPA",
+    "Internships",
+    "Projects",
+    "Coding Skills",
+    "Communication Skills",
+    "Aptitude Score",
+    "Soft Skills",
+    "Certifications",
+    "Backlogs",
+    "Gender",
+    "B.Tech",
+    "BCA",
+    "MCA",
+    "Civil",
+    "ECE",
+    "IT",
+    "ME"
+]
+
+importance = model.feature_importances_
+
+importance_df = pd.DataFrame({
+    "Feature": feature_names,
+    "Importance": importance
+})
+
+importance_df = importance_df.sort_values(
+    by="Importance",
+    ascending=False
+)
+
+st.bar_chart(
+    importance_df.set_index("Feature")
+)
+
