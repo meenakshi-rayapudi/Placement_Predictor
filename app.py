@@ -16,6 +16,7 @@ st.set_page_config(
 # =========================
 model = joblib.load("placement_model.pkl")
 
+
 # =========================
 # 3. HEADER
 # =========================
@@ -261,4 +262,3 @@ importance_df = importance_df.sort_values(
 st.bar_chart(
     importance_df.set_index("Feature")
 )
-
